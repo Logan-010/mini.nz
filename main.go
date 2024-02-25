@@ -18,10 +18,10 @@ import (
 var (
 	db          *sql.DB
 	appUrl      string
-	filesDirPtr *string = flag.String("filesDir", "./files", "Set flag to select the directory where user uploaded files are stored (default \"./files\")")
-	dbDirPtr    *string = flag.String("dbDir", "./data.db", "Set flag to select the directory where the database is stored (default \"./data.db\")")
-	portPtr     *uint   = flag.Uint("port", 8080, "Set flag to select port that app listens on (default 8080)")
-	linkPtr     *string = flag.String("link", "http://localhost", "Set to overide link served in html template (default http://localhost) please note that setting this does not change the port!")
+	filesDirPtr *string = flag.String("filesDir", "./files", "Set flag to select the directory where user uploaded files are stored")
+	dbDirPtr    *string = flag.String("dbDir", "./data.db", "Set flag to select the directory where the database is stored")
+	portPtr     *uint   = flag.Uint("port", 8080, "Set flag to select port that app listens on")
+	linkPtr     *string = flag.String("link", "http://localhost", "Set to overide link served in html template. Please note that setting this does not change the port! Also, if you do set this, be sure to specify the port or else the pages will send requests to just the base url!")
 )
 
 type PageTemplate struct {
@@ -222,7 +222,11 @@ func main() {
 	initialize()
 
 	addr := fmt.Sprintf(":%d", *portPtr)
-	appUrl = fmt.Sprintf("%s%s", *linkPtr, addr)
+	if *linkPtr != "http://localhost" {
+		appUrl = *linkPtr
+	} else {
+		appUrl = fmt.Sprintf("%s%s", *linkPtr, addr)
+	}
 
 	mux := http.NewServeMux()
 
