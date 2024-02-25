@@ -9,8 +9,8 @@ import (
 	"github.com/google/uuid"
 )
 
-func CreateFileAndUpdateDatabase(data []byte, db *sql.DB) (string, error) {
-	path := fmt.Sprintf("./files/%v", uuid.New().String())
+func CreateFileAndUpdateDatabase(data []byte, db *sql.DB, filePath string) (string, error) {
+	path := fmt.Sprintf("%v/%v", filePath, uuid.New().String())
 
 	file, err := os.Create(path)
 	if err != nil {

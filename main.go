@@ -183,7 +183,7 @@ func upload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	code, err := lib.CreateFileAndUpdateDatabase(encryptedData, db)
+	code, err := lib.CreateFileAndUpdateDatabase(encryptedData, db, *filesDirPtr)
 	if err != nil {
 		log.Println(err)
 		errorCatcher(w, r, http.StatusInternalServerError)
