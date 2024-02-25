@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	_ "embed"
+	"flag"
 	"fmt"
 	"io"
 	"log"
@@ -13,15 +14,20 @@ import (
 	"mini.nz/lib"
 )
 
-var db *sql.DB
+var (
+	db          *sql.DB
+	filesDirPtr *string = flag.String("filesDir", "./files", "Set flag to select the directory where user uploaded files are stored (default \"./files\")")
+	dbDirPtr    *string = flag.String("dbDir", "./data.db", "Set flag to select the directory where the database is stored (default \"./data.db\")")
+	portPtr     *uint   = flag.Uint("port", 8080, "Set flag to select port that app listens on (default 8080)")
+)
 
 func init() {
-	err := os.Mkdir("./files", os.ModeDir)
+	err := os.Mkdir(*filesDirPtr, os.ModeDir)
 	if err != nil && !os.IsExist(err) {
 		log.Fatal(err)
 	}
 
-	db, err = sql.Open("sqlite3", "data.db")
+	db, err = sql.Open("sqlite3", *dbDirPtr)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -163,6 +169,7 @@ func view(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	flag.Parse()
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/", index)
@@ -170,6 +177,7 @@ func main() {
 	mux.HandleFunc("/upload", upload)
 	mux.HandleFunc("/view/{code}/{key}", view)
 
-	fmt.Println("Listening on http://localhost:8080")
-	log.Fatal(http.ListenAndServe(":8080", mux))
+	addr := fmt.Sprintf(":%d", *portPtr)
+	fmt.Printf("Listening on http://localhost%s\n", addr)
+	log.Fatal(http.ListenAndServe(addr, mux))
 }
