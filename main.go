@@ -5,6 +5,7 @@ import (
 	_ "embed"
 	"flag"
 	"fmt"
+	"html/template"
 	"io"
 	"log"
 	"net/http"
@@ -16,10 +17,16 @@ import (
 
 var (
 	db          *sql.DB
+	appUrl      string
 	filesDirPtr *string = flag.String("filesDir", "./files", "Set flag to select the directory where user uploaded files are stored (default \"./files\")")
 	dbDirPtr    *string = flag.String("dbDir", "./data.db", "Set flag to select the directory where the database is stored (default \"./data.db\")")
 	portPtr     *uint   = flag.Uint("port", 8080, "Set flag to select port that app listens on (default 8080)")
+	linkPtr     *string = flag.String("link", "http://localhost", "Set to overide link served in html template (default http://localhost) please note that setting this does not change the port!")
 )
+
+type PageTemplate struct {
+	AppLink string
+}
 
 func initialize() {
 	err := os.Mkdir(*filesDirPtr, os.ModeDir)
@@ -63,12 +70,42 @@ func errorCatcher(w http.ResponseWriter, _ *http.Request, code int) {
 
 	switch code {
 	case http.StatusNotFound:
-		fmt.Fprintln(w, page404)
+		tmpl, err := template.New("404").Parse(page404)
+		if err != nil {
+			return
+		}
+
+		templateStruct := PageTemplate{appUrl}
+
+		err = tmpl.Execute(w, templateStruct)
+		if err != nil {
+			return
+		}
 	case http.StatusInternalServerError:
-		fmt.Fprintln(w, pageInternalServiceError)
+		tmpl, err := template.New("internalServiceError").Parse(pageInternalServiceError)
+		if err != nil {
+			return
+		}
+
+		templateStruct := PageTemplate{appUrl}
+
+		err = tmpl.Execute(w, templateStruct)
+		if err != nil {
+			return
+		}
 
 	default:
-		fmt.Fprintln(w, pageInternalServiceError)
+		tmpl, err := template.New("internalServiceError").Parse(pageInternalServiceError)
+		if err != nil {
+			return
+		}
+
+		templateStruct := PageTemplate{appUrl}
+
+		err = tmpl.Execute(w, templateStruct)
+		if err != nil {
+			return
+		}
 	}
 }
 
@@ -78,7 +115,19 @@ func index(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprintln(w, pageIndex)
+	tmpl, err := template.New("index").Parse(pageIndex)
+	if err != nil {
+		errorCatcher(w, r, http.StatusInternalServerError)
+		return
+	}
+
+	templateStruct := PageTemplate{appUrl}
+
+	err = tmpl.Execute(w, templateStruct)
+	if err != nil {
+		errorCatcher(w, r, http.StatusInternalServerError)
+		return
+	}
 }
 
 func css(w http.ResponseWriter, r *http.Request) {
@@ -171,6 +220,10 @@ func view(w http.ResponseWriter, r *http.Request) {
 func main() {
 	flag.Parse()
 	initialize()
+
+	addr := fmt.Sprintf(":%d", *portPtr)
+	appUrl = fmt.Sprintf("%s%s", *linkPtr, addr)
+
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/", index)
@@ -178,7 +231,6 @@ func main() {
 	mux.HandleFunc("/upload", upload)
 	mux.HandleFunc("/view/{code}/{key}", view)
 
-	addr := fmt.Sprintf(":%d", *portPtr)
-	fmt.Printf("Listening on http://localhost%s\n", addr)
+	fmt.Printf("Listening on %s\n", appUrl)
 	log.Fatal(http.ListenAndServe(addr, mux))
 }

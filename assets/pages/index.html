@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>MINI.NZ</title>
-    <link href="http://localhost:8080/css" rel="stylesheet">
+    <link href="{{.AppLink}}/css" rel="stylesheet">
     <script>
     function submitForm() {
         var form = document.getElementById("uploadForm");
@@ -13,7 +13,7 @@
 
         var password = document.querySelector('input[name="encryptionKey"]').value;
 
-        fetch("http://localhost:8080/upload", {
+        fetch("{{.AppLink}}/upload", {
             method: "POST",
             body: formData
         })
@@ -33,7 +33,7 @@
                 document.write(data);
                 document.close();
             } else {
-                var responseText = '<a class="text-2xl font-semibold underline" href="http://localhost:8080/view/' + data.trim() + '/' + password + '">Link Here</a>';
+                var responseText = '<a class="text-2xl font-semibold underline" href="{{.AppLink}}/view/' + data.trim() + '/' + password + '">Link Here</a>';
                 document.getElementById("response").innerHTML = responseText;
             }
         })
