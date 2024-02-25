@@ -1,10 +1,10 @@
-# Mini.nz - End-to-End Encrypted File Upload Service
+# Mini.nz - Encrypted File Upload Service
 
 Mini.nz is a lightweight file upload service written in Go that focuses on providing end-to-end encryption for user privacy. With Mini.nz, you can easily upload and share files while ensuring that your data remains confidential.
 
 ## Features
 
-- **End-to-End Encryption**: Mini.nz ensures the privacy of your files by employing end-to-end encryption.
+- **Encryption**: Mini.nz ensures the privacy of your files by employing file encryption.
 
 - **Simple Setup**: Get started with Mini.nz in a few simple steps. Just clone the repository, build the application, and run it. The provided Dockerfile also allows for easy deployment in containerized environments.
 
