@@ -37,6 +37,8 @@ Follow these steps to set up Mini.nz on your local machine:
     ./mini.nz
     ```
 
+5. Visit http://localhost:8080 to access Mini.nz in your browser.
+
 ## Docker Support
 
 Mini.nz comes with an included Dockerfile for easy containerization. Build and run Mini.nz in a Docker container using the following commands:
