@@ -1,6 +1,7 @@
 package lib
 
 import (
+	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
@@ -8,10 +9,15 @@ import (
 	"io"
 )
 
-func Encrypt(data, key []byte) ([]byte, error) {
-	for len(key) < 32 {
-		key = append(key, 0)
+func padKey(key []byte) []byte {
+	if len(key) >= 32 {
+		return key[:32]
 	}
+	return append(key, bytes.Repeat([]byte{0}, 32-len(key))...)
+}
+
+func Encrypt(data, key []byte) ([]byte, error) {
+	key = padKey(key)
 
 	keyBytes := []byte(key)
 	block, err := aes.NewCipher(keyBytes)
@@ -33,10 +39,8 @@ func Encrypt(data, key []byte) ([]byte, error) {
 	return gcm.Seal(nonce, nonce, data, nil), nil
 }
 
-func Decrypt(data []byte, key []byte) ([]byte, error) {
-	for len(key) < 32 {
-		key = append(key, 0)
-	}
+func Decrypt(data, key []byte) ([]byte, error) {
+	key = padKey(key)
 
 	c, err := aes.NewCipher(key)
 	if err != nil {
