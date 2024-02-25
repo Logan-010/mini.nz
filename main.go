@@ -21,7 +21,7 @@ var (
 	portPtr     *uint   = flag.Uint("port", 8080, "Set flag to select port that app listens on (default 8080)")
 )
 
-func init() {
+func initialize() {
 	err := os.Mkdir(*filesDirPtr, os.ModeDir)
 	if err != nil && !os.IsExist(err) {
 		log.Fatal(err)
@@ -170,6 +170,7 @@ func view(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	flag.Parse()
+	initialize()
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/", index)
