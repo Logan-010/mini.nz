@@ -16,7 +16,7 @@ func padKey(key []byte) []byte {
 	return append(key, bytes.Repeat([]byte{0}, 32-len(key))...)
 }
 
-func Encrypt(data, key []byte) ([]byte, error) {
+func encrypt(data, key []byte) ([]byte, error) {
 	key = padKey(key)
 
 	keyBytes := []byte(key)
@@ -39,7 +39,7 @@ func Encrypt(data, key []byte) ([]byte, error) {
 	return gcm.Seal(nonce, nonce, data, nil), nil
 }
 
-func Decrypt(data, key []byte) ([]byte, error) {
+func decrypt(data, key []byte) ([]byte, error) {
 	key = padKey(key)
 
 	c, err := aes.NewCipher(key)

@@ -176,14 +176,7 @@ func upload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	encryptedData, err := lib.Encrypt(fileBytes, []byte(key))
-	if err != nil {
-		log.Println(err)
-		errorCatcher(w, r, http.StatusInternalServerError)
-		return
-	}
-
-	code, err := lib.CreateFileAndUpdateDatabase(encryptedData, db, *filesDirPtr)
+	code, err := lib.CreateFileAndUpdateDatabase(fileBytes, db, *filesDirPtr, key)
 	if err != nil {
 		log.Println(err)
 		errorCatcher(w, r, http.StatusInternalServerError)
@@ -197,19 +190,14 @@ func view(w http.ResponseWriter, r *http.Request) {
 	code := r.PathValue("code")
 	key := r.PathValue("key")
 
-	data, err := lib.RetrieveFile(code, db)
+	data, err := lib.RetrieveFile(code, db, key)
 	if err != nil {
+		log.Println(err)
 		errorCatcher(w, r, http.StatusInternalServerError)
 		return
 	}
 
-	decryptedData, err := lib.Decrypt(data, []byte(key))
-	if err != nil {
-		errorCatcher(w, r, http.StatusInternalServerError)
-		return
-	}
-
-	_, err = w.Write(decryptedData)
+	_, err = w.Write(data)
 	if err != nil {
 		log.Println(err)
 		errorCatcher(w, r, http.StatusInternalServerError)
@@ -230,10 +218,10 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/", index)
-	mux.HandleFunc("/css", css)
-	mux.HandleFunc("/upload", upload)
-	mux.HandleFunc("/view/{code}/{key}", view)
+	mux.Handle("/", lib.GzipHandler(http.HandlerFunc(index)))
+	mux.Handle("/css", lib.GzipHandler(http.HandlerFunc(css)))
+	mux.Handle("/upload", lib.GzipHandler(http.HandlerFunc(upload)))
+	mux.Handle("/view/{code}/{key}", lib.GzipHandler(http.HandlerFunc(view)))
 
 	fmt.Printf("Listening on %s\n", appUrl)
 	log.Fatal(http.ListenAndServe(addr, mux))
