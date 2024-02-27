@@ -75,7 +75,7 @@ func CreateFileAndUpdateDatabase(data []byte, db *sql.DB, filePath string, key s
 
 		uuidString := code.String()
 
-		err = SetFile(path, uuidString, db)
+		err = setFile(path, uuidString, db)
 		if err != nil {
 			errChan <- err
 			return
@@ -98,7 +98,7 @@ func RetrieveFile(code string, db *sql.DB, key string) ([]byte, error) {
 	decryptedDataChan := make(chan []byte)
 
 	go func() {
-		path, err := GetFile(code, db)
+		path, err := getFile(code, db)
 		if err != nil {
 			errChan <- err
 			return

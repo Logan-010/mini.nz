@@ -2,7 +2,7 @@ package lib
 
 import "database/sql"
 
-func SetFile(path string, code string, db *sql.DB) error {
+func setFile(path string, code string, db *sql.DB) error {
 	insertCode := `
         INSERT INTO files (path, code) VALUES (?, ?);
 	`
@@ -12,7 +12,7 @@ func SetFile(path string, code string, db *sql.DB) error {
 	return err
 }
 
-func GetFile(code string, db *sql.DB) (string, error) {
+func getFile(code string, db *sql.DB) (string, error) {
 	selectLink := `
 	    SELECT path FROM files WHERE code = (?)
 	`

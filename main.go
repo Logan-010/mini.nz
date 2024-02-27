@@ -109,6 +109,17 @@ func errorCatcher(w http.ResponseWriter, _ *http.Request, code int) {
 	}
 }
 
+func css(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/css" {
+		errorCatcher(w, r, http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/css")
+
+	fmt.Fprintln(w, pageCss)
+}
+
 func index(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
 		errorCatcher(w, r, http.StatusNotFound)
@@ -128,17 +139,6 @@ func index(w http.ResponseWriter, r *http.Request) {
 		errorCatcher(w, r, http.StatusInternalServerError)
 		return
 	}
-}
-
-func css(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/css" {
-		errorCatcher(w, r, http.StatusNotFound)
-		return
-	}
-
-	w.Header().Set("Content-Type", "text/css")
-
-	fmt.Fprintln(w, pageCss)
 }
 
 func upload(w http.ResponseWriter, r *http.Request) {
