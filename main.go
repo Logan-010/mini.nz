@@ -17,11 +17,10 @@ import (
 
 var (
 	db          *sql.DB
-	appUrl      string
 	filesDirPtr *string = flag.String("filesDir", "./files", "Set flag to select the directory where user uploaded files are stored")
 	dbDirPtr    *string = flag.String("dbDir", "./data.db", "Set flag to select the directory where the database is stored")
 	portPtr     *uint   = flag.Uint("port", 8080, "Set flag to select port that app listens on")
-	linkPtr     *string = flag.String("link", "http://localhost", "Set to overide link served in html template. Please note that setting this does not change the port! Also, if you do set this, be sure to specify the port or else the pages will send requests to just the base url!")
+	linkPtr     *string = flag.String("link", "http://localhost:8080", "Set to overide link inserted in html template. Please note that changing the link does not change the port the app listens on")
 )
 
 type PageTemplate struct {
@@ -75,7 +74,7 @@ func errorCatcher(w http.ResponseWriter, _ *http.Request, code int) {
 			return
 		}
 
-		templateStruct := PageTemplate{appUrl}
+		templateStruct := PageTemplate{*linkPtr}
 
 		err = tmpl.Execute(w, templateStruct)
 		if err != nil {
@@ -87,7 +86,7 @@ func errorCatcher(w http.ResponseWriter, _ *http.Request, code int) {
 			return
 		}
 
-		templateStruct := PageTemplate{appUrl}
+		templateStruct := PageTemplate{*linkPtr}
 
 		err = tmpl.Execute(w, templateStruct)
 		if err != nil {
@@ -100,7 +99,7 @@ func errorCatcher(w http.ResponseWriter, _ *http.Request, code int) {
 			return
 		}
 
-		templateStruct := PageTemplate{appUrl}
+		templateStruct := PageTemplate{*linkPtr}
 
 		err = tmpl.Execute(w, templateStruct)
 		if err != nil {
@@ -132,7 +131,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	templateStruct := PageTemplate{appUrl}
+	templateStruct := PageTemplate{*linkPtr}
 
 	err = tmpl.Execute(w, templateStruct)
 	if err != nil {
@@ -210,11 +209,6 @@ func main() {
 	initialize()
 
 	addr := fmt.Sprintf(":%d", *portPtr)
-	if *linkPtr != "http://localhost" {
-		appUrl = *linkPtr
-	} else {
-		appUrl = fmt.Sprintf("%s%s", *linkPtr, addr)
-	}
 
 	mux := http.NewServeMux()
 
@@ -223,6 +217,6 @@ func main() {
 	mux.Handle("/upload", lib.GzipHandler(http.HandlerFunc(upload)))
 	mux.Handle("/view/{code}/{key}", lib.GzipHandler(http.HandlerFunc(view)))
 
-	fmt.Printf("Listening on %s\n", appUrl)
+	fmt.Printf("Listening on %s (http://localhost%s)\n", *linkPtr, addr)
 	log.Fatal(http.ListenAndServe(addr, mux))
 }
