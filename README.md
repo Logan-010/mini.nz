@@ -8,6 +8,8 @@ Mini.nz is a lightweight file upload service written in Go that focuses on provi
 
 - **Simple Setup**: Get started with Mini.nz in a few simple steps. Just clone the repository, build the application, and run it. The provided Dockerfile also allows for easy deployment in containerized environments.
 
+- **Gzip compression**: Lightens network loads and makes user files on disk smaller!
+
 ## Getting Started
 
 Follow these steps to set up Mini.nz on your local machine:
