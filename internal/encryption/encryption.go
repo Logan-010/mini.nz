@@ -1,26 +1,27 @@
 package encryption
 
 import (
-	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
 	"errors"
-	"io"
+
+	"golang.org/x/crypto/argon2"
 )
 
-func padKey(key []byte) []byte {
-	if len(key) >= 32 {
-		return key[:32]
-	}
-	return append(key, bytes.Repeat([]byte{0}, 32-len(key))...)
+func hashKey(key, salt []byte) []byte {
+	return argon2.IDKey(key, salt, 1, 64*1024, 4, 32)
 }
 
 func Encrypt(data, key []byte) ([]byte, error) {
-	key = padKey(key)
+	salt := make([]byte, 32)
+	if _, err := rand.Read(salt[:]); err != nil {
+		return nil, err
+	}
 
-	keyBytes := []byte(key)
-	block, err := aes.NewCipher(keyBytes)
+	key = hashKey(key, salt)
+
+	block, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, err
 	}
@@ -31,16 +32,23 @@ func Encrypt(data, key []byte) ([]byte, error) {
 	}
 
 	nonce := make([]byte, gcm.NonceSize())
-	_, err = io.ReadFull(rand.Reader, nonce)
-	if err != nil {
+	if _, err := rand.Read(nonce); err != nil {
 		return nil, err
 	}
 
-	return gcm.Seal(nonce, nonce, data, nil), nil
+	ciphertext := gcm.Seal(nonce, nonce, data, nil)
+
+	out := append(salt, ciphertext...)
+
+	return out, nil
 }
 
 func Decrypt(data, key []byte) ([]byte, error) {
-	key = padKey(key)
+	if len(data) < 32 {
+		return nil, errors.New("ciphertext too short")
+	}
+
+	key = hashKey(key, data[:32])
 
 	c, err := aes.NewCipher(key)
 	if err != nil {
@@ -57,6 +65,6 @@ func Decrypt(data, key []byte) ([]byte, error) {
 		return nil, errors.New("ciphertext too short")
 	}
 
-	nonce, ciphertext := data[:nonceSize], data[nonceSize:]
+	nonce, ciphertext := data[32:nonceSize+32], data[nonceSize+32:]
 	return gcm.Open(nil, nonce, ciphertext, nil)
 }

@@ -7,7 +7,7 @@ SOURCE_DIR := ./cmd/mini.nz
 # Default target
 .PHONY: build
 build:
-	mkdir -p $(BIN_DIR)
+	mkdir $(BIN_DIR)
 	go build -o $(BIN_DIR)/$(EXECUTABLE_NAME) $(BUILD_FLAGS) $(SOURCE_DIR)
 
 # Clean target
